@@ -23,15 +23,14 @@ jobs:
 
     - name: Install Databricks CLI
       run: |
-        pip install databricks-cli
+        pip install databricks-cli --upgrade
 
-    - name: Configure Databricks CLI
+    - name: Authenticate Databricks CLI
       env:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
       run: |
-        mkdir -p ~/.databricks
-        echo -e "[DEFAULT]\nhost = $DATABRICKS_HOST\ntoken = $DATABRICKS_TOKEN" > ~/.databricks/config
+        databricks auth login --host "$DATABRICKS_HOST" --token "$DATABRICKS_TOKEN"
 
     - name: Upload sample data to DBFS
       run: |
