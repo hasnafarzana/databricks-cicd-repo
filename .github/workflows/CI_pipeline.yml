@@ -38,5 +38,8 @@ jobs:
         echo -e "[DEFAULT]\nhost = $DATABRICKS_HOST\ntoken = $DATABRICKS_TOKEN" > ~/.databricks/config
 
     - name: Upload sample data to DBFS
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
       run: |
         databricks fs cp ./sample_sales.csv dbfs:/FileStore/sample_sales.csv --overwrite
