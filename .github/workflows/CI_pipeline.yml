@@ -26,12 +26,16 @@ jobs:
         pip install --upgrade databricks-cli
         pip install --upgrade databricks-sdk  # Ensures latest authentication support
 
+    - name: Check Databricks CLI Version
+      run: databricks --version
+
     - name: Authenticate Databricks CLI
       env:
         DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
         DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
       run: |
-        databricks configure --host "$DATABRICKS_HOST" --token "$DATABRICKS_TOKEN"
+        mkdir -p ~/.databricks
+        echo -e "[DEFAULT]\nhost = $DATABRICKS_HOST\ntoken = $DATABRICKS_TOKEN" > ~/.databricks/config
 
     - name: Upload sample data to DBFS
       run: |
