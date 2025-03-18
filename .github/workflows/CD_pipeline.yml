@@ -1,4 +1,4 @@
- name: CD Pipeline for Azure Databricks
+name: CD Pipeline for Azure Databricks
 
  on:
    push:
@@ -18,15 +18,21 @@
        with:
          python-version: '3.x'
 
-     - name: Install Databricks CLI
-       run: pip install databricks-cli
+     - name: Install Databricks CLI (Latest)
+      run: |
+        pip install --upgrade databricks-cli
+        pip install --upgrade databricks-sdk  # Ensures latest authentication support
 
-     - name: Configure Databricks CLI
-       run: |
-         databricks configure --token <<EOF
-         $
-         $
-         EOF
+    - name: Check Databricks CLI Version
+      run: databricks --version
+
+    - name: Authenticate Databricks CLI
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      run: |
+        mkdir -p ~/.databricks
+        echo -e "[DEFAULT]\nhost = $DATABRICKS_HOST\ntoken = $DATABRICKS_TOKEN" > ~/.databricks/config
      
      - name: Import Notebook to Workspace
        run: databricks workspace import sample_sales_notebook.py /Workspace/Users/hasnafarzana1520@gmail.com/CD_pipeline/CD_pipeline -l python --overwrite
