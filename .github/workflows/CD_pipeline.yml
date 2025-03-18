@@ -1,24 +1,24 @@
 name: CD Pipeline for Azure Databricks
 
- on:
-   push:
-     branches:
-       - main
+on:
+  push:
+    branches:
+      - main
 
- jobs:
-   deploy:
-     runs-on: ubuntu-latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-     steps:
-     - name: Checkout code
-       uses: actions/checkout@v3
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-     - name: Set up Python
-       uses: actions/setup-python@v4
-       with:
-         python-version: '3.x'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-     - name: Install Databricks CLI (Latest)
+    - name: Install Databricks CLI (Latest)
       run: |
         pip install --upgrade databricks-cli
         pip install --upgrade databricks-sdk  # Ensures latest authentication support
@@ -33,16 +33,18 @@ name: CD Pipeline for Azure Databricks
       run: |
         mkdir -p ~/.databricks
         echo -e "[DEFAULT]\nhost = $DATABRICKS_HOST\ntoken = $DATABRICKS_TOKEN" > ~/.databricks/config
-     
-     - name: Import Notebook to Workspace
-       run: databricks workspace import sample_sales_notebook.py /Workspace/Users/hasnafarzana1520@gmail.com/CD_pipeline/CD_pipeline -l python --overwrite
 
-       env:
-         DATABRICKS_TOKEN: $
+    - name: Import Notebook to Workspace
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      run: |
+        databricks workspace import sample_sales_notebook.py /Workspace/Users/hasnafarzana1520@gmail.com/CD_pipeline/CD_pipeline -l python --overwrite
 
-     - name: Run Databricks Job
-       run: |
-         databricks jobs create --json-file job-config.json
-         databricks jobs run-now --job-id $(databricks jobs list | grep -m 1 'CD pipeline' | awk '{print $1}')
-       env:
-         DATABRICKS_TOKEN: $
+    - name: Run Databricks Job
+      env:
+        DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+        DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      run: |
+        JOB_ID=$(databricks jobs create --json-file job-config.json | jq -r '.job_id')
+        databricks jobs run-now --job-id $JOB_ID
